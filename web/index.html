@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pipes</title>
+  <style>
+    :root {
+      --bg-color: #0b0f19;
+      --card-bg: rgba(18, 24, 38, 0.95);
+      --border-color: rgba(0, 245, 212, 0.2);
+      --accent-cyan: #00f5d4;
+      --accent-blue: #38bdf8;
+      --accent-amber: #fbbf24;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-family);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* Ambient background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 50% 40%, rgba(0, 245, 212, 0.05) 0%, transparent 70%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 440px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       PANTALLA INICIAL (HOME SCREEN - ESTILO I LOVE HUE)
+       ========================================================================== */
+    #home-screen {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .home-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #ffffff, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-align: center;
+    }
+
+    .home-subtitle {
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-top: 4px;
+      text-align: center;
+    }
+
+    /* Selector de Aspect Ratio / Simulador Móvil */
+    .aspect-selector-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      max-width: 340px;
+      background: rgba(18, 24, 38, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 10px 14px;
+    }
+
+    .aspect-selector-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .aspect-chips {
+      display: flex;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .aspect-chip {
+      flex: 1;
+      text-align: center;
+      padding: 6px 4px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .aspect-chip.active {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 10px rgba(0, 245, 212, 0.35);
+    }
+
+    .size-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      width: 100%;
+      max-width: 340px;
+    }
+
+    .size-card {
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .size-card:hover, .size-card:active {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
+      transform: scale(1.04);
+      background: rgba(0, 245, 212, 0.08);
+    }
+
+    .size-card .size-num {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-main);
+      font-feature-settings: "tnum";
+    }
+
+    .size-card .size-desc {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+      margin-top: 2px;
+    }
+
+    .home-toggles {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 340px;
+      background: rgba(18, 24, 38, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 12px 18px;
+    }
+
+    .toggle-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      cursor: pointer;
+    }
+
+    .toggle-row input {
+      accent-color: var(--accent-cyan);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       PANTALLA DE JUEGO (GAMEPLAY - PURA GRILLA Y BOTONES MINIMALISTAS)
+       ========================================================================== */
+    #game-screen {
+      width: 100%;
+      height: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .board-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      height: 76vh;
+      max-height: 760px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+    }
+
+    /* Modos de Aspect Ratio en el Board Wrapper */
+    .board-wrapper.ratio-16-9 {
+      aspect-ratio: 9 / 16;
+      height: 76vh;
+    }
+    .board-wrapper.ratio-19-5-9 {
+      aspect-ratio: 9 / 19.5;
+      height: 80vh;
+    }
+    .board-wrapper.ratio-22-9 {
+      aspect-ratio: 9 / 22;
+      height: 84vh;
+    }
+    .board-wrapper.ratio-auto {
+      aspect-ratio: auto;
+      height: 78vh;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: pointer;
+    }
+
+    /* Barra de botones minimalista (Solo Iconos, sin texto) */
+    .icon-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding-bottom: 8px;
+    }
+
+    .icon-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(18, 24, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(0, 245, 212, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .icon-btn:active {
+      transform: translateY(1px);
+    }
+
+    .hint-badge {
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      background: var(--accent-amber);
+      color: #0b0f19;
+      font-size: 0.65rem;
+      font-weight: 800;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    }
+
+    /* ==========================================================================
+       MODAL DE VICTORIA (ESTILO I LOVE HUE)
+       ========================================================================== */
+    .modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s ease;
+      padding: 24px;
+      z-index: 20;
+    }
+
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .victory-card {
+      background: rgba(18, 24, 38, 0.95);
+      border: 1px solid var(--border-color);
+      border-radius: 24px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 245, 212, 0.2);
+      transform: scale(0.92);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+    }
+
+    .modal-overlay.show .victory-card {
+      transform: scale(1);
+    }
+
+    .victory-stars {
+      font-size: 2.2rem;
+      color: var(--accent-amber);
+      letter-spacing: 4px;
+      filter: drop-shadow(0 0 10px rgba(251, 191, 36, 0.6));
+    }
+
+    .victory-stats {
+      font-size: 0.95rem;
+      color: var(--text-dim);
+      font-feature-settings: "tnum";
+    }
+
+    .victory-stats b {
+      color: var(--text-main);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 14px;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .action-btn.primary {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 16px rgba(0, 245, 212, 0.4);
+    }
+
+    /* ==========================================================================
+       MODAL DE AJUSTES (SETTINGS MODAL)
+       ========================================================================== */
+    .settings-card {
+      background: rgba(18, 24, 38, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .settings-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-header h3 {
+      font-size: 0.95rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-main);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    .settings-chips {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .settings-chip {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-dim);
+      padding: 8px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .settings-chip.active {
+      background: var(--accent-cyan);
+      color: #0b0f19;
+      border-color: var(--accent-cyan);
+    }
+
+    .home-nav-btn {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .home-nav-btn:hover {
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- 1. PANTALLA INICIAL (SELECTOR DIRECTO DE GRILLA ESTILO I LOVE HUE) -->
+    <div id="home-screen">
+      <div>
+        <h1 class="home-title">PIPES</h1>
+        <div class="home-subtitle">Lógica &middot; Electro-Zen</div>
+      </div>
+
+      <!-- Simulador de Aspect Ratio Móvil -->
+      <div class="aspect-selector-box">
+        <span class="aspect-selector-label">Formato de Pantalla Móvil</span>
+        <div class="aspect-chips">
+          <div class="aspect-chip" data-ratio="16-9" onclick="setAspectRatioMode('16-9')">9:16</div>
+          <div class="aspect-chip active" data-ratio="19-5-9" onclick="setAspectRatioMode('19-5-9')">9:19.5</div>
+          <div class="aspect-chip" data-ratio="22-9" onclick="setAspectRatioMode('22-9')">9:22</div>
+          <div class="aspect-chip" data-ratio="auto" onclick="setAspectRatioMode('auto')">Auto</div>
+        </div>
+      </div>
+
+      <!-- Cuadrícula de Densidades de Columnas -->
+      <div class="size-grid">
+        <div class="size-card" onclick="selectDensityAndPlay(4)">
+          <div class="size-num" id="card-label-4">4 cols</div>
+          <div class="size-desc">Inicio</div>
+        </div>
+        <div class="size-card" onclick="selectDensityAndPlay(5)">
+          <div class="size-num" id="card-label-5">5 cols</div>
+          <div class="size-desc">Calma</div>
+        </div>
+        <div class="size-card" onclick="selectDensityAndPlay(6)">
+          <div class="size-num" id="card-label-6">6 cols</div>
+          <div class="size-desc">Flujo</div>
+        </div>
+        <div class="size-card" onclick="selectDensityAndPlay(7)">
+          <div class="size-num" id="card-label-7">7 cols</div>
+          <div class="size-desc">Desafío</div>
+        </div>
+        <div class="size-card" onclick="selectDensityAndPlay(8)">
+          <div class="size-num" id="card-label-8">8 cols</div>
+          <div class="size-desc">Experto</div>
+        </div>
+        <div class="size-card" onclick="selectDensityAndPlay(9)">
+          <div class="size-num" id="card-label-9">9 cols</div>
+          <div class="size-desc">Maestro</div>
+        </div>
+      </div>
+
+      <div class="home-toggles">
+        <label class="toggle-row">
+          <span>Modo Toroide (Wrapping)</span>
+          <input type="checkbox" id="home-torus-toggle">
+        </label>
+        <label class="toggle-row">
+          <span>Audio Reactivo</span>
+          <input type="checkbox" id="home-audio-toggle" checked>
+        </label>
+      </div>
+    </div>
+
+    <!-- 2. PANTALLA DE JUEGO (SOLO GRILLA ADAPTATIVA + 4 BOTONES ICONO MINIMALISTAS) -->
+    <div id="game-screen">
+      <div class="board-wrapper ratio-19-5-9" id="board-wrapper">
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Modal de Victoria (Estilo I Love Hue) -->
+        <div class="modal-overlay" id="victory-modal">
+          <div class="victory-card">
+            <div class="victory-stars" id="modal-stars">★★★</div>
+            <div class="victory-stats" id="modal-stats">
+              <b>12</b> movimientos &middot; Óptimo: <b>10</b>
+            </div>
+            <div class="modal-actions">
+              <button class="action-btn" onclick="openHome()" title="Menú">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+              </button>
+              <button class="action-btn primary" onclick="startNewLevel()" title="Siguiente Nivel">
+                ➔
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal de Ajustes (Settings) -->
+        <div class="modal-overlay" id="settings-modal">
+          <div class="settings-card">
+            <div class="settings-header">
+              <h3>Configuración</h3>
+              <button class="close-btn" onclick="closeSettings()">&times;</button>
+            </div>
+
+            <!-- Formato en Ajustes -->
+            <div class="aspect-selector-box" style="padding: 6px; background: none; border: none;">
+              <span class="aspect-selector-label">Formato</span>
+              <div class="aspect-chips">
+                <div class="aspect-chip" data-ratio="16-9" onclick="setAspectRatioMode('16-9')">9:16</div>
+                <div class="aspect-chip" data-ratio="19-5-9" onclick="setAspectRatioMode('19-5-9')">9:19.5</div>
+                <div class="aspect-chip" data-ratio="22-9" onclick="setAspectRatioMode('22-9')">9:22</div>
+                <div class="aspect-chip" data-ratio="auto" onclick="setAspectRatioMode('auto')">Auto</div>
+              </div>
+            </div>
+
+            <!-- Densidad de Columnas en Ajustes -->
+            <div class="settings-chips" id="settings-chips">
+              <div class="settings-chip" data-cols="4" onclick="changeCols(4)">4 cols</div>
+              <div class="settings-chip" data-cols="5" onclick="changeCols(5)">5 cols</div>
+              <div class="settings-chip" data-cols="6" onclick="changeCols(6)">6 cols</div>
+              <div class="settings-chip" data-cols="7" onclick="changeCols(7)">7 cols</div>
+              <div class="settings-chip" data-cols="8" onclick="changeCols(8)">8 cols</div>
+              <div class="settings-chip" data-cols="9" onclick="changeCols(9)">9 cols</div>
+            </div>
+
+            <div class="home-toggles" style="padding: 10px 0; border: none; background: none;">
+              <label class="toggle-row">
+                <span>Modo Toroide</span>
+                <input type="checkbox" id="settings-torus-toggle">
+              </label>
+              <label class="toggle-row">
+                <span>Audio Reactivo</span>
+                <input type="checkbox" id="settings-audio-toggle" checked>
+              </label>
+            </div>
+
+            <button class="home-nav-btn" onclick="openHome()">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+              </svg>
+              <span>Volver a Inicio</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra flotante de 4 botones icono minimalistas -->
+      <div class="icon-toolbar">
+        <!-- 1. Deshacer (Undo) -->
+        <button class="icon-btn" onclick="undoMove()" title="Deshacer">
+          <svg viewBox="0 0 24 24">
+            <path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/>
+          </svg>
+        </button>
+
+        <!-- 2. Pista (Hint) -->
+        <button class="icon-btn" onclick="giveHint()" title="Pista">
+          <svg viewBox="0 0 24 24">
+            <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/>
+          </svg>
+          <div class="hint-badge" id="hint-badge">3</div>
+        </button>
+
+        <!-- 3. Nuevo (Restart / New) -->
+        <button class="icon-btn" onclick="startNewLevel()" title="Nuevo">
+          <svg viewBox="0 0 24 24">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+        </button>
+
+        <!-- 4. Ajustes (Settings) -->
+        <button class="icon-btn" onclick="openSettings()" title="Ajustes">
+          <svg viewBox="0 0 24 24">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ==========================================================================
+       1. CONSTANTS & BITMASK DEFINITIONS
+       ========================================================================== */
+    const NORTH = 1;
+    const EAST  = 2;
+    const SOUTH = 4;
+    const WEST  = 8;
+
+    const DIRS = [NORTH, EAST, SOUTH, WEST];
+    const OPPOSITE = {
+      [NORTH]: SOUTH,
+      [EAST]:  WEST,
+      [SOUTH]: NORTH,
+      [WEST]:  EAST
+    };
+
+    const DELTAS = {
+      [NORTH]: { dx:  0, dy: -1 },
+      [EAST]:  { dx:  1, dy:  0 },
+      [SOUTH]: { dx:  0, dy:  1 },
+      [WEST]:  { dx: -1, dy:  0 }
+    };
+
+    function rotateClockwise(mask) {
+      return ((mask << 1) | (mask >> 3)) & 0x0F;
+    }
+
+    function turnsNeeded(current, target) {
+      let turns = 0;
+      let m = current;
+      while (turns < 4) {
+        if (m === target) return turns;
+        m = rotateClockwise(m);
+        turns++;
+      }
+      return 0;
+    }
+
+    /* ==========================================================================
+       2. PROCEDURAL SYNTHESIZER
+       ========================================================================== */
+    class ReactiveSynth {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.scale = [
+          261.63, 293.66, 329.63, 392.00, 440.00,
+          523.25, 587.33, 659.25, 783.99, 880.00,
+          1046.50, 1174.66
+        ];
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playRotate() {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(140, now + 0.05);
+
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.06);
+      }
+
+      playEnergyStep(progressPercent) {
+        if (!this.enabled) return;
+        this.init();
+        const now = this.ctx.currentTime;
+        const idx = Math.min(
+          this.scale.length - 1,
+          Math.floor((progressPercent / 100) * this.scale.length)
+        );
+        const freq = this.scale[idx];
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.14, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+
+      playVictory() {
+        if (!this.enabled) return;
+        this.init();
+        const chord = [523.25, 659.25, 783.99, 1046.50];
+        chord.forEach((freq, i) => {
+          const now = this.ctx.currentTime + i * 0.08;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now);
+
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.65);
+        });
+      }
+    }
+
+    const synth = new ReactiveSynth();
+
+    /* ==========================================================================
+       3. ALGORITHMIC GENERATOR (Kruskal Spanning Tree para cualquier W x H)
+       ========================================================================== */
+    class PuzzleEngine {
+      constructor(width = 5, height = 11, torus = false) {
+        this.w = width;
+        this.h = height;
+        this.torus = torus;
+        this.coreX = Math.floor(width / 2);
+        this.coreY = Math.floor(height / 2);
+        this.solution = [];
+        this.grid = [];
+        this.energized = [];
+        this.moves = 0;
+        this.optimalMoves = 0;
+        this.moveHistory = [];
+        this.isWon = false;
+        this.hints = 3;
+        this.animations = [];
+      }
+
+      generate() {
+        this.solution = Array.from({ length: this.h }, () => new Array(this.w).fill(0));
+
+        const edges = [];
+        for (let y = 0; y < this.h; y++) {
+          for (let x = 0; x < this.w; x++) {
+            const u = y * this.w + x;
+            if (x + 1 < this.w || this.torus) {
+              const nx = (x + 1) % this.w;
+              const v = y * this.w + nx;
+              edges.push({ u, v, x1: x, y1: y, x2: nx, y2: y, dir: EAST });
+            }
+            if (y + 1 < this.h || this.torus) {
+              const ny = (y + 1) % this.h;
+              const v = ny * this.w + x;
+              edges.push({ u, v, x1: x, y1: y, x2: x, y2: ny, dir: SOUTH });
+            }
+          }
+        }
+
+        for (let i = edges.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [edges[i], edges[j]] = [edges[j], edges[i]];
+        }
+
+        const parent = Array.from({ length: this.w * this.h }, (_, i) => i);
+        const find = (i) => (parent[i] === i ? i : (parent[i] = find(parent[i])));
+        const union = (i, j) => {
+          const rootI = find(i);
+          const rootJ = find(j);
+          if (rootI !== rootJ) {
+            parent[rootI] = rootJ;
+            return true;
+          }
+          return false;
+        };
+
+        let edgesCount = 0;
+        for (const edge of edges) {
+          if (union(edge.u, edge.v)) {
+            this.solution[edge.y1][edge.x1] |= edge.dir;
+            this.solution[edge.y2][edge.x2] |= OPPOSITE[edge.dir];
+            edgesCount++;
+            if (edgesCount === this.w * this.h - 1) break;
+          }
+        }
+
+        this.grid = Array.from({ length: this.h }, () => new Array(this.w).fill(0));
+        let totalOptimalMoves = 0;
+
+        for (let y = 0; y < this.h; y++) {
+          for (let x = 0; x < this.w; x++) {
+            const sol = this.solution[y][x];
+            if (sol === 15 || sol === 0) {
+              this.grid[y][x] = sol;
+              continue;
+            }
+
+            let turns;
+            if (sol === 5 || sol === 10) {
+              turns = Math.random() < 0.5 ? 0 : 1;
+            } else {
+              turns = Math.floor(Math.random() * 4);
+            }
+
+            let current = sol;
+            for (let t = 0; t < turns; t++) {
+              current = rotateClockwise(current);
+            }
+
+            this.grid[y][x] = current;
+            totalOptimalMoves += turnsNeeded(current, sol);
+          }
+        }
+
+        this.moves = 0;
+        this.optimalMoves = totalOptimalMoves;
+        this.moveHistory = [];
+        this.isWon = false;
+        this.animations = [];
+        this.evaluateFlow();
+      }
+
+      evaluateFlow() {
+        this.energized = Array.from({ length: this.h }, () => new Array(this.w).fill(false));
+        const visited = Array.from({ length: this.h }, () => new Array(this.w).fill(false));
+        const queue = [{ x: this.coreX, y: this.coreY }];
+
+        this.energized[this.coreY][this.coreX] = true;
+        visited[this.coreY][this.coreX] = true;
+
+        let energizedCount = 1;
+
+        while (queue.length > 0) {
+          const curr = queue.shift();
+          const currMask = this.grid[curr.y][curr.x];
+
+          for (const dir of DIRS) {
+            if ((currMask & dir) !== 0) {
+              const delta = DELTAS[dir];
+              let nx = curr.x + delta.dx;
+              let ny = curr.y + delta.dy;
+
+              if (this.torus) {
+                nx = (nx + this.w) % this.w;
+                ny = (ny + this.h) % this.h;
+              } else {
+                if (nx < 0 || nx >= this.w || ny < 0 || ny >= this.h) continue;
+              }
+
+              const neighborMask = this.grid[ny][nx];
+              const oppDir = OPPOSITE[dir];
+
+              if ((neighborMask & oppDir) !== 0) {
+                if (!visited[ny][nx]) {
+                  visited[ny][nx] = true;
+                  this.energized[ny][nx] = true;
+                  energizedCount++;
+                  queue.push({ x: nx, y: ny });
+                }
+              }
+            }
+          }
+        }
+
+        let totalCells = this.w * this.h;
+        let leaks = 0;
+        let connections = 0;
+
+        for (let y = 0; y < this.h; y++) {
+          for (let x = 0; x < this.w; x++) {
+            const mask = this.grid[y][x];
+            for (const dir of DIRS) {
+              if ((mask & dir) !== 0) {
+                const delta = DELTAS[dir];
+                let nx = x + delta.dx;
+                let ny = y + delta.dy;
+
+                if (this.torus) {
+                  nx = (nx + this.w) % this.w;
+                  ny = (ny + this.h) % this.h;
+                } else if (nx < 0 || nx >= this.w || ny < 0 || ny >= this.h) {
+                  leaks++;
+                  continue;
+                }
+
+                const oppDir = OPPOSITE[dir];
+                if ((this.grid[ny][nx] & oppDir) === 0) {
+                  leaks++;
+                } else {
+                  connections++;
+                }
+              }
+            }
+          }
+        }
+
+        connections = Math.floor(connections / 2);
+        const won = (energizedCount === totalCells) && (leaks === 0) && (connections === totalCells - 1);
+        const percent = Math.round((energizedCount / totalCells) * 100);
+
+        return { won, percent, energizedCount, totalCells };
+      }
+
+      rotateCell(x, y) {
+        if (this.isWon) return false;
+        const prevMask = this.grid[y][x];
+        const newMask = rotateClockwise(prevMask);
+
+        this.moveHistory.push({ x, y, prevMask, newMask });
+        this.grid[y][x] = newMask;
+        this.moves++;
+
+        this.animations = this.animations.filter(a => !(a.x === x && a.y === y));
+        this.animations.push({
+          x, y,
+          startAngle: 0,
+          currentAngle: -Math.PI / 2,
+          progress: 0
+        });
+
+        const status = this.evaluateFlow();
+        if (status.won) {
+          this.isWon = true;
+        }
+        return status;
+      }
+
+      undo() {
+        if (this.moveHistory.length === 0 || this.isWon) return null;
+        const last = this.moveHistory.pop();
+        this.grid[last.y][last.x] = last.prevMask;
+        this.moves = Math.max(0, this.moves - 1);
+        return this.evaluateFlow();
+      }
+
+      getHint() {
+        if (this.isWon || this.hints <= 0) return null;
+        for (let y = 0; y < this.h; y++) {
+          for (let x = 0; x < this.w; x++) {
+            const curr = this.grid[y][x];
+            const sol = this.solution[y][x];
+            if (curr !== sol) {
+              this.hints--;
+              this.grid[y][x] = sol;
+              this.moves++;
+              this.animations.push({
+                x, y,
+                startAngle: 0,
+                currentAngle: -Math.PI / 2,
+                progress: 0
+              });
+              const status = this.evaluateFlow();
+              if (status.won) this.isWon = true;
+              return { x, y, status };
+            }
+          }
+        }
+        return null;
+      }
+    }
+
+    /* ==========================================================================
+       4. ELECTRO-ZEN CANVAS RENDERER (ADAPTATIVO A GRILLAS RECTANGULARES)
+       ========================================================================== */
+    class GameView {
+      constructor(canvas, engine) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.engine = engine;
+        this.sparkPhase = 0;
+        this.padding = 8;
+        this.initCanvasSize();
+        window.addEventListener('resize', () => {
+          this.initCanvasSize();
+        });
+        this.animate = this.animate.bind(this);
+        requestAnimationFrame(this.animate);
+      }
+
+      initCanvasSize() {
+        const rect = this.canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        this.dpr = dpr;
+        if (rect && rect.width > 0 && rect.height > 0) {
+          this.width = Math.floor(rect.width * dpr);
+          this.height = Math.floor(rect.height * dpr);
+          this.canvas.width = this.width;
+          this.canvas.height = this.height;
+        }
+      }
+
+      animate() {
+        this.sparkPhase += 0.05;
+        this.render();
+        requestAnimationFrame(this.animate);
+      }
+
+      render() {
+        const rect = this.canvas.getBoundingClientRect();
+        if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        this.dpr = dpr;
+        const w = Math.floor(rect.width * dpr);
+        const h = Math.floor(rect.height * dpr);
+
+        if (this.canvas.width !== w || this.canvas.height !== h) {
+          this.canvas.width = w;
+          this.canvas.height = h;
+          this.width = w;
+          this.height = h;
+        }
+
+        const ctx = this.ctx;
+        ctx.clearRect(0, 0, w, h);
+
+        const cols = this.engine.w;
+        const rows = this.engine.h;
+
+        const pad = this.padding * this.dpr;
+        const availW = Math.max(10, w - pad * 2);
+        const availH = Math.max(10, h - pad * 2);
+
+        // CELDA PERFECTAMENTE CUADRADA: min entre el ancho y alto disponible
+        const cellSize = Math.min(availW / cols, availH / rows);
+        const boardW = cellSize * cols;
+        const boardH = cellSize * rows;
+
+        // Centrado milimétrico en el canvas
+        const startX = (w - boardW) / 2;
+        const startY = (h - boardH) / 2;
+        const pipeWidth = Math.max(2, cellSize * 0.14);
+
+        for (let i = this.engine.animations.length - 1; i >= 0; i--) {
+          const anim = this.engine.animations[i];
+          anim.progress += 0.18;
+          if (anim.progress >= 1) {
+            this.engine.animations.splice(i, 1);
+          } else {
+            anim.currentAngle = (-Math.PI / 2) * (1 - anim.progress);
+          }
+        }
+
+        ctx.save();
+        const cornerR = 14 * this.dpr;
+        ctx.beginPath();
+        ctx.roundRect(startX, startY, boardW, boardH, cornerR);
+        ctx.fillStyle = '#0f1420';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.2)';
+        ctx.lineWidth = 1.5 * this.dpr;
+        ctx.stroke();
+
+        ctx.clip();
+
+        // Líneas de cuadrícula sutiles
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 1 * this.dpr;
+        for (let i = 1; i < cols; i++) {
+          ctx.beginPath();
+          ctx.moveTo(startX + i * cellSize, startY);
+          ctx.lineTo(startX + i * cellSize, startY + boardH);
+          ctx.stroke();
+        }
+        for (let j = 1; j < rows; j++) {
+          ctx.beginPath();
+          ctx.moveTo(startX, startY + j * cellSize);
+          ctx.lineTo(startX + boardW, startY + j * cellSize);
+          ctx.stroke();
+        }
+
+        // Dibujar cada casilla de tubería
+        for (let y = 0; y < rows; y++) {
+          for (let x = 0; x < cols; x++) {
+            const cx = startX + x * cellSize + cellSize / 2;
+            const cy = startY + y * cellSize + cellSize / 2;
+            const mask = this.engine.grid[y][x];
+            const isEnergized = this.engine.energized[y][x];
+            const isCore = (x === this.engine.coreX && y === this.engine.coreY);
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            const anim = this.engine.animations.find(a => a.x === x && a.y === y);
+            if (anim) {
+              ctx.rotate(anim.currentAngle);
+            }
+
+            this.drawPipeTile(ctx, mask, cellSize, pipeWidth, isEnergized);
+
+            if (isCore) {
+              this.drawPowerCore(ctx, cellSize, pipeWidth);
+            }
+
+            ctx.restore();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      drawPipeTile(ctx, mask, cellSize, pipeWidth, isEnergized) {
+        if (mask === 0) return;
+        const half = cellSize / 2;
+
+        const buildPath = () => {
+          ctx.beginPath();
+          ctx.lineCap = 'butt';
+          ctx.lineJoin = 'round';
+
+          if (mask === (NORTH | SOUTH)) {
+            ctx.moveTo(0, -half); ctx.lineTo(0, half); return;
+          }
+          if (mask === (EAST | WEST)) {
+            ctx.moveTo(-half, 0); ctx.lineTo(half, 0); return;
+          }
+          if (mask === (NORTH | EAST)) {
+            ctx.moveTo(0, -half); ctx.lineTo(0, 0); ctx.lineTo(half, 0); return;
+          }
+          if (mask === (EAST | SOUTH)) {
+            ctx.moveTo(half, 0); ctx.lineTo(0, 0); ctx.lineTo(0, half); return;
+          }
+          if (mask === (SOUTH | WEST)) {
+            ctx.moveTo(0, half); ctx.lineTo(0, 0); ctx.lineTo(-half, 0); return;
+          }
+          if (mask === (WEST | NORTH)) {
+            ctx.moveTo(-half, 0); ctx.lineTo(0, 0); ctx.lineTo(0, -half); return;
+          }
+
+          const bitCount = (mask & 1) + ((mask >> 1) & 1) + ((mask >> 2) & 1) + ((mask >> 3) & 1);
+          if (bitCount === 1) {
+            if (mask & NORTH) { ctx.moveTo(0, 0); ctx.lineTo(0, -half); }
+            if (mask & EAST)  { ctx.moveTo(0, 0); ctx.lineTo(half, 0); }
+            if (mask & SOUTH) { ctx.moveTo(0, 0); ctx.lineTo(0, half); }
+            if (mask & WEST)  { ctx.moveTo(0, 0); ctx.lineTo(-half, 0); }
+            return;
+          }
+
+          if ((mask & (NORTH | SOUTH)) === (NORTH | SOUTH)) {
+            ctx.moveTo(0, -half); ctx.lineTo(0, half);
+            if (mask & EAST) { ctx.moveTo(0, 0); ctx.lineTo(half, 0); }
+            if (mask & WEST) { ctx.moveTo(0, 0); ctx.lineTo(-half, 0); }
+            return;
+          }
+          if ((mask & (EAST | WEST)) === (EAST | WEST)) {
+            ctx.moveTo(-half, 0); ctx.lineTo(half, 0);
+            if (mask & NORTH) { ctx.moveTo(0, 0); ctx.lineTo(0, -half); }
+            if (mask & SOUTH) { ctx.moveTo(0, 0); ctx.lineTo(0, half); }
+            return;
+          }
+
+          ctx.moveTo(0, -half); ctx.lineTo(0, half);
+          ctx.moveTo(-half, 0); ctx.lineTo(half, 0);
+        };
+
+        const bitCount = (mask & 1) + ((mask >> 1) & 1) + ((mask >> 2) & 1) + ((mask >> 3) & 1);
+
+        if (isEnergized) {
+          ctx.save();
+          buildPath();
+          ctx.strokeStyle = 'rgba(0, 245, 212, 0.4)';
+          ctx.lineWidth = pipeWidth * 2.2;
+          ctx.shadowColor = '#00f5d4';
+          ctx.shadowBlur = pipeWidth * 1.5;
+          ctx.stroke();
+
+          buildPath();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = pipeWidth;
+          ctx.shadowColor = '#38bdf8';
+          ctx.shadowBlur = pipeWidth * 0.5;
+          ctx.stroke();
+
+          if (bitCount === 1) {
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#00f5d4';
+            ctx.shadowBlur = pipeWidth * 1.2;
+            ctx.beginPath();
+            ctx.arc(0, 0, pipeWidth * 0.7, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        } else {
+          ctx.save();
+          buildPath();
+          ctx.strokeStyle = '#1e293b';
+          ctx.lineWidth = pipeWidth * 1.35;
+          ctx.stroke();
+
+          buildPath();
+          ctx.strokeStyle = '#64748b';
+          ctx.lineWidth = pipeWidth * 0.9;
+          ctx.stroke();
+
+          if (bitCount === 1) {
+            ctx.fillStyle = '#64748b';
+            ctx.beginPath();
+            ctx.arc(0, 0, pipeWidth * 0.65, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+      }
+
+      drawPowerCore(ctx, cellSize, pipeWidth) {
+        const pulse = Math.sin(this.sparkPhase * 2) * 0.12 + 1.0;
+        const r = cellSize * 0.18 * pulse;
+
+        const grad = ctx.createRadialGradient(0, 0, r * 0.2, 0, 0, r * 1.8);
+        grad.addColorStop(0, 'rgba(0, 245, 212, 0.85)');
+        grad.addColorStop(0.5, 'rgba(56, 189, 248, 0.3)');
+        grad.addColorStop(1, 'rgba(0, 245, 212, 0)');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 1.8, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#00f5d4';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.65, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    /* ==========================================================================
+       5. NAVEGACIÓN Y CONTROLADORES CON SIMULADOR DE FORMATO MÓVIL
+       ========================================================================== */
+    let currentCols = 5;
+    let currentAspectRatioMode = '19-5-9'; // Default 9:19.5 (Galaxy/iPhone/Pixel)
+    let engine = new PuzzleEngine(5, 11, false);
+    engine.generate();
+    const canvas = document.getElementById('game-canvas');
+    const boardWrapper = document.getElementById('board-wrapper');
+    const view = new GameView(canvas, engine);
+
+    const homeScreen = document.getElementById('home-screen');
+    const gameScreen = document.getElementById('game-screen');
+    const victoryModal = document.getElementById('victory-modal');
+    const settingsModal = document.getElementById('settings-modal');
+
+    function getAspectMultiplier(mode) {
+      switch (mode) {
+        case '16-9': return 16 / 9;      // ~1.777
+        case '19-5-9': return 19.5 / 9;  // ~2.166
+        case '22-9': return 22 / 9;      // ~2.444
+        case 'auto':
+        default:
+          const rect = boardWrapper.getBoundingClientRect();
+          return rect.width > 0 ? (rect.height / rect.width) : (19.5 / 9);
+      }
+    }
+
+    function calculateRowsForCols(cols, mode = currentAspectRatioMode) {
+      const multiplier = getAspectMultiplier(mode);
+      return Math.max(cols, Math.round(cols * multiplier));
+    }
+
+    function updateCardLabels() {
+      for (let c = 4; c <= 9; c++) {
+        const el = document.getElementById(`card-label-${c}`);
+        if (el) {
+          const r = calculateRowsForCols(c);
+          el.textContent = `${c}×${r}`;
+        }
+      }
+    }
+
+    function setAspectRatioMode(mode) {
+      currentAspectRatioMode = mode;
+      document.querySelectorAll('.aspect-chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-ratio') === mode);
+      });
+
+      boardWrapper.className = `board-wrapper ratio-${mode}`;
+      updateCardLabels();
+
+      if (gameScreen.style.display === 'flex') {
+        startNewLevel();
+      }
+    }
+
+    function selectDensityAndPlay(cols) {
+      currentCols = cols;
+      const isTorus = document.getElementById('home-torus-toggle').checked;
+      const isAudio = document.getElementById('home-audio-toggle').checked;
+      synth.enabled = isAudio;
+
+      document.getElementById('settings-torus-toggle').checked = isTorus;
+      document.getElementById('settings-audio-toggle').checked = isAudio;
+
+      homeScreen.style.display = 'none';
+      gameScreen.style.display = 'flex';
+
+      startNewLevel();
+
+      requestAnimationFrame(() => {
+        view.initCanvasSize();
+      });
+    }
+
+    function openHome() {
+      victoryModal.classList.remove('show');
+      settingsModal.classList.remove('show');
+      gameScreen.style.display = 'none';
+      homeScreen.style.display = 'flex';
+    }
+
+    function openSettings() {
+      document.querySelectorAll('.settings-chip').forEach(c => {
+        c.classList.toggle('active', parseInt(c.getAttribute('data-cols'), 10) === currentCols);
+      });
+      document.querySelectorAll('#settings-modal .aspect-chip').forEach(c => {
+        c.classList.toggle('active', c.getAttribute('data-ratio') === currentAspectRatioMode);
+      });
+      settingsModal.classList.add('show');
+    }
+
+    function closeSettings() {
+      settingsModal.classList.remove('show');
+    }
+
+    function changeCols(cols) {
+      currentCols = cols;
+      closeSettings();
+      startNewLevel();
+    }
+
+    function startNewLevel() {
+      victoryModal.classList.remove('show');
+      const torus = document.getElementById('settings-torus-toggle').checked;
+      const calculatedRows = calculateRowsForCols(currentCols);
+
+      engine = new PuzzleEngine(currentCols, calculatedRows, torus);
+      engine.generate();
+      view.engine = engine;
+      document.getElementById('hint-badge').textContent = engine.hints;
+
+      requestAnimationFrame(() => {
+        view.initCanvasSize();
+      });
+    }
+
+    function undoMove() {
+      const status = engine.undo();
+      if (status) {
+        synth.playRotate();
+      }
+    }
+
+    function giveHint() {
+      const res = engine.getHint();
+      if (res) {
+        synth.playRotate();
+        synth.playEnergyStep(res.status.percent);
+        document.getElementById('hint-badge').textContent = engine.hints;
+        if (res.status.won) {
+          showVictory();
+        }
+      }
+    }
+
+    function showVictory() {
+      synth.playVictory();
+
+      let stars = 3;
+      if (engine.moves > engine.optimalMoves + 2) stars = 2;
+      if (engine.moves > engine.optimalMoves + 7) stars = 1;
+
+      const starsText = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+      document.getElementById('modal-stars').textContent = starsText;
+      document.getElementById('modal-stats').innerHTML = `
+        <b>${engine.moves}</b> movimientos &middot; Óptimo: <b>${engine.optimalMoves}</b>
+      `;
+
+      setTimeout(() => {
+        victoryModal.classList.add('show');
+      }, 500);
+    }
+
+    // Canvas click handling
+    canvas.addEventListener('pointerdown', (e) => {
+      synth.init();
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const pad = view.padding;
+      const availW = rect.width - pad * 2;
+      const availH = rect.height - pad * 2;
+
+      const cellSize = Math.min(availW / engine.w, availH / engine.h);
+      const boardW = cellSize * engine.w;
+      const boardH = cellSize * engine.h;
+
+      const startX = (rect.width - boardW) / 2;
+      const startY = (rect.height - boardH) / 2;
+
+      const col = Math.floor((clickX - startX) / cellSize);
+      const row = Math.floor((clickY - startY) / cellSize);
+
+      if (col >= 0 && col < engine.w && row >= 0 && row < engine.h) {
+        const status = engine.rotateCell(col, row);
+        synth.playRotate();
+
+        if (status) {
+          if (status.percent > 0) {
+            synth.playEnergyStep(status.percent);
+          }
+          if (status.won) {
+            showVictory();
+          }
+        }
+      }
+    });
+
+    // Sincronización de toggles entre Home y Settings
+    document.getElementById('home-torus-toggle').addEventListener('change', (e) => {
+      document.getElementById('settings-torus-toggle').checked = e.target.checked;
+    });
+    document.getElementById('settings-torus-toggle').addEventListener('change', (e) => {
+      document.getElementById('home-torus-toggle').checked = e.target.checked;
+      startNewLevel();
+    });
+
+    document.getElementById('home-audio-toggle').addEventListener('change', (e) => {
+      synth.enabled = e.target.checked;
+      document.getElementById('settings-audio-toggle').checked = e.target.checked;
+    });
+    document.getElementById('settings-audio-toggle').addEventListener('change', (e) => {
+      synth.enabled = e.target.checked;
+      document.getElementById('home-audio-toggle').checked = e.target.checked;
+    });
+
+    // Actualizar etiquetas iniciales
+    updateCardLabels();
+  </script>
+</body>
+</html>

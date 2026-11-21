@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Pipes</string>
+    <string name="moves_label">Movimientos</string>
+    <string name="energy_label">Energía</string>
+    <string name="optimal_label">Óptimo</string>
+    <string name="undo">Deshacer</string>
+    <string name="hint">Pista</string>
+    <string name="new_game">Nuevo</string>
+    <string name="victory_title">¡Red Energizada!</string>
+    <string name="next_level">Siguiente Nivel</string>
+    <string name="torus_mode">Modo Toroide</string>
+</resources>
